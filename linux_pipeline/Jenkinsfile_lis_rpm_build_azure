@@ -1,3 +1,5 @@
+#!/usr/bin/env groovy
+
 // Wrapper to execute powershell scripts / commands
 def RunPowershellCommand(psCmd) {
     bat "powershell.exe -NonInteractive -ExecutionPolicy Bypass -Command \"[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;$psCmd;EXIT \$global:LastExitCode\""
@@ -59,7 +61,7 @@ node ("meta_slave") {
         def Distros = [:]
         if( ( distro == 'all') || ( distro == 'rh5')) {
             Distros["RH5"] = {
-                node('lisbuilddemo') {
+                node('lis-rpm-build-controller-vm') {
                     try {
                         stage ('RH5') {
                             cleanWs()
@@ -79,7 +81,7 @@ node ("meta_slave") {
         }
         if( ( distro == 'all') || ( distro == 'rh6')) {
             Distros["RH6"] = {
-                node('lisbuilddemo') {
+                node('lis-rpm-build-controller-vm') {
                     try {
                         stage ('RH6') {
                             cleanWs()
@@ -98,7 +100,7 @@ node ("meta_slave") {
         }
         if( ( distro == 'all') || ( distro == 'rh7')) {
             Distros["RH7"] =  {
-                node("lisbuilddemo") {
+                node('lis-rpm-build-controller-vm') {
                     try {
                         stage ('RH7') {
                             cleanWs()
