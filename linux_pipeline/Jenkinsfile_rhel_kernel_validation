@@ -74,7 +74,7 @@ stage ("Test kernel") {
         }
         versionsPath = "./rhel_versions-${env.BUILD_NUMBER}${env.BRANCH_NAME}/kernel_versions.txt"
         kernelVersions = readFile(versionsPath)
-        if (!kernelVersions) {
+        if (kernelVersions) {
             sendMail = false
             echo "No new kernel versions were found"
             currentBuild.result = 'SUCCESS'
