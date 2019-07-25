@@ -218,9 +218,9 @@ node ("jenkins-meta-slave") {
     timeout(time: hotfixTimeout, unit: 'HOURS') {
         currentStage = "Prerequisite"
         stage (currentStage) {
-             withCredentials([file(credentialsId: 'LIS_HOTFIX_CONFIGURE_FILE', variable: 'LIS_HOTFIX_CONFIGURE_FILE')]) {
+             withCredentials([file(credentialsId: 'LIS_HOTFIX_CONFIGURE_TEST_FILE', variable: 'LIS_HOTFIX_CONFIGURE_TEST_FILE')]) {
                 sh (returnStatus: true, script: """#!/bin/bash
-                . ${LIS_HOTFIX_CONFIGURE_FILE}
+                . ${LIS_HOTFIX_CONFIGURE_TEST_FILE}
                 echo -n "\$LIS_HOTFIX_STORAGE_ACCOUNT" > LIS_HOTFIX_STORAGE_ACCOUNT.tmp
                 echo -n "\$LIS_HOTFIX_BOOTDIAG_STORAGE_ACCOUNT" > LIS_HOTFIX_BOOTDIAG_STORAGE_ACCOUNT.tmp
                 echo -n "\$LIS_BUILD_VM_USERNAME" > LIS_BUILD_VM_USERNAME.tmp
@@ -271,13 +271,13 @@ node ("jenkins-meta-slave") {
                     distro = distro.replace('[', '').replace(']', '').replace(' ', '')
                     println "Prepare environment for Distro ${distro}"
                     checkout scm
-                    withCredentials([file(credentialsId: 'Azure_Secrets_File_LIS_Val', variable: 'Azure_Secrets_File_LIS_Val'), string(credentialsId: 'LIS_BUILD_PASSWORD', variable: 'LIS_BUILD_PASSWORD')])
+                    withCredentials([file(credentialsId: 'Azure_Secrets_File', variable: 'Azure_Secrets_File'), string(credentialsId: 'LIS_BUILD_PASSWORD', variable: 'LIS_BUILD_PASSWORD')])
                     {
                         RunPowershellCommand(".\\scripts\\lis_hotfix_pipeline\\CreateBuildMachines.ps1"+
                             " -DistroKernelVersions '${distro}'" +
                             " -VHDSourceStorageAccount '${env.STORAGE_ACCOUNT_NAME}'" +
                             " -BootDiagnosticStorageAccount '${env.LIS_HOTFIX_BOOTDIAG_STORAGE_ACCOUNT}'" +
-                            " -secretsFile '${Azure_Secrets_File_LIS_Val}' " +
+                            " -secretsFile '${Azure_Secrets_File}' " +
                             " -LinuxUsername '${env.LIS_BUILD_VM_USERNAME}'" +
                             " -LinuxPassword '${env.LIS_BUILD_VM_PASSWORD}'"
                         )
@@ -301,7 +301,7 @@ node ("jenkins-meta-slave") {
                         HotfixLisVersion = IncrementMinorRevision("${OldVersion}")
 
                         println "pipeline-lis-rpm-build-azure is invoked for version: ${HotfixLisVersion}.. "
-                        JobBuildRPM = build job: 'LIS/pipeline-lis-rpm-build-azure', parameters: [
+                        JobBuildRPM = build job: 'SandBox/pipeline-lis-rpm-build-azure-test', parameters: [
                         string(name: 'distro', value: "all"),
                         string(name: 'buildname', value: "${HotfixLisVersion}"),
                         string(name: 'source', value: "https://github.com/LIS/lis-next"),
@@ -310,7 +310,7 @@ node ("jenkins-meta-slave") {
                         quietPeriod: 10, wait: true, propagate: true
 
                         try {
-                            copyArtifacts(projectName: 'LIS/pipeline-lis-rpm-build-azure', selector: specific("${JobBuildRPM.id}"));
+                            copyArtifacts(projectName: 'SandBox/pipeline-lis-rpm-build-azure-test', selector: specific("${JobBuildRPM.id}"));
                             def customlisrpm = readFile 'LIS_RPM_URL.txt'
                             def customlisiso = readFile 'LIS_ISO_URL.txt'
                             println "RPM build packages are rpm:${customlisrpm} iso:${customlisiso}"
